@@ -7,7 +7,7 @@ try {
   serviceAccount = require('../serviceAccountKey.json');
   console.log("✅ serviceAccountKey.json ditemukan.");
 } catch (e) {
-  console.error("❌ serviceAccountKey.json GAK KETEMU! Pastikan file ada di root folder.");
+  console.error("❌ serviceAccountKey.json GAK KETEMU!");
 }
 
 if (!admin.apps.length) {
@@ -16,8 +16,6 @@ if (!admin.apps.length) {
       credential: admin.credential.cert(serviceAccount)
     });
     console.log("🔥 Firebase Initialized!");
-  } else {
-    console.error("💀 Gagal Init Firebase: Credential Kosong/Salah Path.");
   }
 }
 
