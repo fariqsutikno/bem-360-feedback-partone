@@ -11,9 +11,9 @@
   "author": "Google LLC",
   "license": "Apache-2.0",
   "dependencies": {
+    "@google-cloud/connect-firestore": "^3.0.0",
     "@google/generative-ai": "^0.24.1",
     "connect-flash": "^0.1.1",
-    "connect-session-firestore": "^1.0.0",
     "dotenv": "^17.2.3",
     "ejs": "^3.1.10",
     "express": "^4.22.1",

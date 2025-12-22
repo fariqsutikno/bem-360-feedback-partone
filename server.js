@@ -2,6 +2,7 @@ require('dotenv').config(); // Muat environment variables
 const express = require('express');
 // 👇 PENTING: Cukup panggil db aja, inisialisasi biarin diurus file config
 const { db, Firestore } = require('./config/firebase'); 
+const { FirestoreStore } = require('@google-cloud/connect-firestore');
 const session = require('express-session');
 const FirestoreStore = require('connect-session-firestore')(session);
 const helmet = require('helmet');
@@ -47,6 +48,7 @@ const sessionSecret = process.env.SESSION_SECRET || 'rahasia_negara_bem_fallback
 app.use(session({
   store: new FirestoreStore({
     database: db, // 🔥 Pakai 'database' bukan 'db'
+    kind: 'express-sessions',
   }),
   secret: sessionSecret,
   resave: false,
