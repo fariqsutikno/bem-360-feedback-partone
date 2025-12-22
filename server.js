@@ -1,5 +1,6 @@
 require('dotenv').config(); // Muat environment variables
 const express = require('express');
+const { db } = require('./config/firebase');
 const session = require('express-session');
 const FirestoreStore = require('connect-session-firestore')(session);
 const helmet = require('helmet');
