@@ -1,4 +1,5 @@
 const { db } = require('../config/firebase');
+const { catatLog } = require('../utils/logs');
 
 // 1. TAMPILKAN HALAMAN LOGIN
 const loginPage = (req, res) => {
@@ -11,32 +12,75 @@ const loginPage = (req, res) => {
 
 // 2. PROSES LOGIN (LOGIC UTAMA)
 const loginProcess = async (req, res) => {
+    // 1. Definisiin variabel di luar try-catch biar aman
+    let nimInput = ""; 
+
+    // 2. 🕵️‍♂️ LOGIC NANGKEP IP (Jurus 3 Lapis)
+    // Urutannya: Cek req.ip (express) -> Cek header nginx -> Cek koneksi langsung
+    const userIp = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress || "UNKNOWN";
+
     try {
-        // Ambil input NIM dan buang spasi kosong di depan/belakang (Trim)
-        const nimInput = req.body.nim.trim();
+        // Ambil input dan Trim
+        nimInput = req.body.nim ? req.body.nim.trim() : "";
         
-        console.log(`[LOGIN ATTEMPT] Mencoba login dengan NIM: '${nimInput}'`);
+        if (!nimInput) {
+            throw new Error("NIM Kosong");
+        }
+
+        console.log(`[LOGIN ATTEMPT] Mencoba login dengan NIM: '${nimInput}' | IP: ${userIp}`);
 
         // Cek ke Database Firebase
         const userDoc = await db.collection('users').doc(nimInput).get();
 
         if (userDoc.exists) {
-            // BERHASIL: Simpan data user di Session
-            req.session.user = userDoc.data();
+            const userData = userDoc.data();
+
+            // === SUKSES ===
+            // Simpan data user di Session
+            req.session.user = userData;
             
-            console.log(`[LOGIN SUCCESS] User ditemukan: ${userDoc.data().name}`);
+            console.log(`[LOGIN SUCCESS] User ditemukan: ${userData.name}`);
+
+            // 🔥 CATAT LOG SUKSES (Bawa IP) 🔥
+            await catatLog(
+                nimInput, 
+                "LOGIN_SUCCESS", 
+                `Login via Web Dashboard (Role: ${userData.role || 'Member'})`, 
+                userIp // <--- IP Masuk Sini
+            );
             
-            // Simpan session secara manual sebelum redirect (biar gak race condition)
+            // Simpan session & Redirect
             req.session.save(() => {
                 res.redirect('/');
             });
+
         } else {
-            // GAGAL: User gak ada
+            // === GAGAL (USER TIDAK ADA) ===
             console.log(`[LOGIN FAILED] NIM '${nimInput}' tidak ada di database.`);
+
+            // 🔥 CATAT LOG GAGAL (Bawa IP juga, biar tau siapa yg iseng) 🔥
+            await catatLog(
+                nimInput, 
+                "LOGIN_FAILED", 
+                "NIM tidak terdaftar di database", 
+                userIp // <--- IP Masuk Sini
+            );
+
             res.render('login', { error: 'NIM tidak terdaftar. Cek lagi ya!' });
         }
+
     } catch (error) {
+        // === ERROR SISTEM ===
         console.error('[SYSTEM ERROR]', error);
+
+        // 🔥 CATAT LOG ERROR (Bawa IP) 🔥
+        await catatLog(
+            nimInput || "SYSTEM", 
+            "LOGIN_ERROR", 
+            error.message, 
+            userIp // <--- IP Masuk Sini
+        );
+
         res.render('login', { error: 'Terjadi kesalahan sistem. Coba lagi.' });
     }
 };
