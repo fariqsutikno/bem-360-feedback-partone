@@ -1,24 +1,35 @@
 require('dotenv').config();
 const express = require('express');
-const { db } = require('./config/firebase'); 
-const session = require('express-session'); // 🔥 Session harus di-require DULU
+const admin = require('firebase-admin');
+const session = require('express-session');
+// 🔥 FIX: Gunakan library resmi Google
+const { FirestoreStore } = require('@google-cloud/connect-firestore');
 const helmet = require('helmet');
 const flash = require('connect-flash');
-const FirestoreStore = require('firestore-store')(session); // 🔥 Baru panggil FirestoreStore SETELAH session
+
+// 🔥 Inisialisasi Firebase
+if (!admin.apps.length) {
+  try {
+    const serviceAccount = require('./serviceAccountKey.json');
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+    console.log("🔥 Firebase Initialized!");
+  } catch (e) {
+    console.error("❌ Error initializing Firebase:", e);
+  }
+}
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// === 1. CONFIG PROXY ===
 app.set('trust proxy', 1); 
 
-// === 2. MIDDLEWARE DASAR ===
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json()); 
 app.use(express.static('public'));
 app.set('view engine', 'ejs');
 
-// === 3. SECURITY (HELMET) ===
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -34,32 +45,41 @@ app.use(
   })
 );
 
-// === 4. SESSION MANAGEMENT (FIRESTORE) ===
 const sessionSecret = process.env.SESSION_SECRET || 'rahasia_negara_bem_fallback_key';
 
+// 🔥 FIX: Konfigurasi session dengan Firestore Store resmi
 app.use(session({
   store: new FirestoreStore({
-    database: db, // 🔥 Instance Firestore dari firebase.js
+    dataset: admin.firestore(), // ← Ini cara yang benar
+    kind: 'express-sessions',    // Nama collection di Firestore
   }),
   secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
+  name: 'bem.sid',
   cookie: { 
-    secure: process.env.NODE_ENV === 'production' ? true : false, 
+    secure: false, // Set false untuk development
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000,
+    maxAge: 24 * 60 * 60 * 1000, // 24 jam
     sameSite: 'lax'
-  }
+  },
+  rolling: true
 }));
 
-// === 5. FLASH MESSAGES ===
+// 🔥 DEBUGGING MIDDLEWARE (Optional - hapus di production)
+app.use((req, res, next) => {
+  console.log('=== SESSION DEBUG ===');
+  console.log('Session ID:', req.sessionID);
+  console.log('User:', req.session.user ? req.session.user.name : 'Not logged in');
+  console.log('====================');
+  next();
+});
+
 app.use(flash());
 
-// === 6. ROUTES ===
 const routes = require('./routes/index');
 app.use('/', routes);
 
-// === 7. JALANKAN SERVER ===
 app.listen(port, () => {
     console.log(`\n===================================================`);
     console.log(`🚀 SERVER PORTAL BEM GEMA REVOLUSI SIAP TEMPUR!`);

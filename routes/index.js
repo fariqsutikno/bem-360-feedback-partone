@@ -17,7 +17,7 @@ const { verifyUser, verifyAdmin } = require('../middleware/authMiddleware');
 router.get('/login', authController.loginPage);
 router.post('/login', authController.loginProcess);
 router.get('/logout', authController.logout);
-router.get('/seed', authController.seedData); // Hapus nanti kalo udah production
+// router.get('/seed', authController.seedData); // Hapus nanti kalo udah production
 
 // Admin Login (Pintu Gerbang Admin)
 router.get('/admin', adminController.loginPage);

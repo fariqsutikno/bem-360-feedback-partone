@@ -1,3 +1,5 @@
+const { db } = require('../config/firebase');
+
 const catatLog = async (nim, action, details = "-", ip = "UNKNOWN") => {
     try {
         await db.collection('activity_logs').add({

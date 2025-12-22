@@ -21,4 +21,5 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 
+// 🔥 FIX: Export juga admin untuk FirestoreStore
 module.exports = { admin, db };
