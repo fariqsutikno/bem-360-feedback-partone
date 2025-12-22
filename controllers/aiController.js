@@ -165,9 +165,17 @@ const analyzePerson = async (req, res) => {
         const result = await model.generateContent(prompt);
         const response = await result.response;
         
-        // Bersihin sisa-sisa markdown json kalau AI bandel
+        // Ganti bagian parsing result yg lama jadi ini:
+
+        // 1. Bersihin markdown
         let text = response.text().replace(/```json/g, '').replace(/```/g, '').trim();
-        const jsonResult = JSON.parse(text);
+
+        // 2. JAGA-JAGA: Ambil JSON-nya doang pake Regex (Kalo ada teks intro sampah)
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error("Output AI bukan JSON valid");
+
+        // 3. Parse yang udah bersih
+        const jsonResult = JSON.parse(jsonMatch[0]);
 
         res.json({ success: true, data: jsonResult });
 
