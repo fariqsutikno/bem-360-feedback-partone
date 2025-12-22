@@ -46,7 +46,7 @@ const sessionSecret = process.env.SESSION_SECRET || 'rahasia_negara_bem_fallback
 
 app.use(session({
   store: new FirestoreStore({
-    dataset: db, // Pake variabel 'db' yang diimport dari config/firebase
+    db: db, // Pake variabel 'db' yang diimport dari config/firebase
     kind: 'sessions', // Nanti muncul collection 'sessions' di Firestore
   }),
   secret: sessionSecret,
