@@ -4,7 +4,7 @@ const express = require('express');
 const { db, Firestore } = require('./config/firebase'); 
 const { FirestoreStore } = require('@google-cloud/connect-firestore');
 const session = require('express-session');
-const FirestoreStore = require('connect-session-firestore')(session);
+// const FirestoreStore = require('connect-session-firestore')(session);
 const helmet = require('helmet');
 const flash = require('connect-flash');
 
