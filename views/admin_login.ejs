@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Restricted Area</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        /* Animasi Masuk */
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-gray-900 h-screen flex items-center justify-center p-6 fade-in">
+    
+    <div class="bg-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-sm border border-gray-700">
+        
+        <div class="text-center mb-6">
+            <div class="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                🔒
+            </div>
+            <h1 class="text-2xl font-bold text-white tracking-tight">Admin Access</h1>
+            <p class="text-gray-400 text-xs mt-1 uppercase tracking-widest font-semibold">Restricted Area</p>
+        </div>
+
+        <% if(error) { %>
+            <div class="bg-red-900/30 border border-red-500/50 text-red-400 text-sm p-3 rounded-xl mb-6 text-center font-medium">
+                ⚠️ <%= error %>
+            </div>
+        <% } %>
+
+        <form action="/admin/login" method="POST">
+            <div class="mb-6">
+                <label class="block text-gray-400 text-xs font-bold mb-2 ml-1">KODE RAHASIA</label>
+                <input type="password" name="password" placeholder="••••••••" 
+                       class="w-full bg-gray-700 border border-gray-600 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-center tracking-[0.2em] font-bold transition placeholder-gray-500" required>
+            </div>
+            
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-blue-900/40 transform active:scale-95">
+                Buka Brankas 🔓
+            </button>
+        </form>
+
+        <div class="mt-8 text-center border-t border-gray-700 pt-6">
+            <a href="/login" class="text-gray-500 text-xs hover:text-white transition font-medium flex items-center justify-center gap-2">
+                <span>←</span> Kembali ke Login Anggota
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>

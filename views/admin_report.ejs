@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>HRD Report: <%= user.name %></title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @page { size: A4; margin: 10mm; }
+        body { font-family: 'Inter', sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        
+        /* Utility Print */
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; padding: 0; }
+            .card { border: 1px solid #e5e7eb; }
+            .page-break { page-break-before: always; }
+            
+            /* Typography Tweaks for Print */
+            h1 { font-size: 20pt !important; }
+            .stat-value { font-size: 24pt !important; }
+            .label-text { font-size: 9pt !important; color: #6b7280; }
+        }
+
+        /* Gradient Status */
+        .bg-danger { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
+        .bg-warning { background: #fef3c7; border-color: #fcd34d; color: #92400e; }
+        .bg-success { background: #dcfce7; border-color: #86efac; color: #166534; }
+        .bg-neutral { background: #f3f4f6; border-color: #d1d5db; color: #374151; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-6 flex justify-center items-start">
+
+    <div class="fixed top-6 left-6 no-print z-50">
+        <a href="/admin/dashboard" class="bg-white px-4 py-2 rounded-lg shadow font-bold text-gray-600 hover:text-blue-600 flex items-center gap-2 border">
+            ← Dashboard
+        </a>
+    </div>
+
+    <div class="fixed bottom-8 right-8 no-print z-50">
+        <button onclick="window.print()" class="bg-slate-900 text-white font-bold px-6 py-3 rounded-full shadow-2xl hover:bg-black transition flex items-center gap-2 transform hover:scale-105">
+            🖨️ Cetak Dokumen HRD
+        </button>
+    </div>
+
+    <div class="bg-white w-full max-w-[210mm] min-h-[297mm] shadow-2xl p-8 md:p-10 relative text-slate-800">
+        
+        <div class="flex justify-between items-start border-b-2 border-slate-800 pb-6 mb-6">
+            <div class="flex gap-5 items-center">
+                <div class="w-20 h-20 bg-slate-900 text-white text-3xl font-bold rounded flex items-center justify-center print:bg-slate-900">
+                    <%= user.name.charAt(0) %>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-extrabold text-slate-900 uppercase tracking-tight leading-none"><%= user.name %></h1>
+                    <div class="flex items-center gap-3 mt-2">
+                        <span class="bg-slate-100 text-slate-700 font-bold px-2 py-0.5 rounded text-xs uppercase border border-slate-300">
+                            <%= user.role %>
+                        </span>
+                        <span class="text-slate-300">|</span>
+                        <span class="font-bold text-slate-600 text-sm uppercase tracking-wider"><%= user.dept %></span>
+                    </div>
+                </div>
+            </div>
+            <div class="text-right">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">RAPOR KINERJA 360°</p>
+                <p class="text-xs text-gray-500 mt-1">
+                    <%= new Date().toLocaleString('id-ID', { 
+                        timeZone: 'Asia/Jakarta',
+                        weekday: 'long', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric', 
+                        hour: '2-digit', 
+                        minute: '2-digit',
+                        second: '2-digit'
+                    }).replace(/\./g, ':') %> WIB
+                </p>
+                <div class="mt-2 text-2xl font-bold text-slate-800"><%= stats.totalVoters %> <span class="text-xs text-gray-400 font-normal uppercase">Responden</span></div>
+            </div>
+        </div>
+
+        <div class="mb-8">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                ⚡ Executive Summary & Recommendation
+            </h3>
+            
+            <% 
+                let cardClass = 'bg-neutral';
+                let icon = '⚖️';
+                let title = 'REVIEW NEEDED';
+                
+                // LOGIC WARNA KARTU (HARDCODED SMART LOGIC)
+                if (user.role === 'anggota') {
+                    if (stats.rekomendasi.reshuffle > 0) { cardClass = 'bg-danger'; icon = '🚨'; title = 'HIGH RISK: RESHUFFLE RECOMMENDED'; }
+                    else if (stats.pasif > stats.cukup_aktif) { cardClass = 'bg-warning'; icon = '👻'; title = 'WARNING: PASSIVE / GHOSTING'; }
+                    else if (stats.rekomendasi.promosi >= (stats.totalVoters/2)) { cardClass = 'bg-success'; icon = '⭐'; title = 'TOP TALENT: PROMOTION READY'; }
+                    else { cardClass = 'bg-success'; icon = '✅'; title = 'STABLE PERFORMANCE'; }
+                } else {
+                    if (stats.comfort.tidak > 0) { cardClass = 'bg-danger'; icon = '🔥'; title = 'CRITICAL: STAFF TURNOVER RISK'; }
+                    else if (stats.comm.otoriter > 0) { cardClass = 'bg-warning'; icon = '⚠️'; title = 'WARNING: AUTHORITARIAN LEADERSHIP'; }
+                    else { cardClass = 'bg-success'; icon = '🛡️'; title = 'SOLID LEADERSHIP'; }
+                }
+            %>
+
+            <div class="<%= cardClass %> p-5 rounded-lg border-l-4 mb-4">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h2 class="text-lg font-bold flex items-center gap-2"><%= icon %> <%= title %></h2>
+                        <p class="text-sm mt-1 opacity-90 font-medium">
+                            <%= stats.decisionSupport %>
+                        </p>
+                    </div>
+                    <div class="no-print">
+                        <button onclick="runAiHrd('<%= user.nim %>')" id="btnAiHrd" class="bg-white/50 hover:bg-white text-xs font-bold px-3 py-1 rounded transition border border-black/10">
+                            ✨ Ask AI Opinion
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="aiResultArea" class="hidden mt-4 pt-4 border-t border-black/10 text-sm">
+                    <p class="animate-pulse text-xs">🤖 AI Sedang Menganalisis...</p>
+                </div>
+                <div id="aiRealContent" class="hidden mt-4 pt-4 border-t border-black/10">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-[10px] uppercase font-bold opacity-60">Sentimen & Keluhan</p>
+                            <p class="font-bold text-sm" id="aiSentiment">-</p>
+                            <ul class="list-disc list-inside text-xs mt-1 opacity-80" id="aiComplaints"></ul>
+                        </div>
+                        <div>
+                            <p class="text-[10px] uppercase font-bold opacity-60">Saran Tindakan (HRD)</p>
+                            <p class="italic text-sm" id="aiAdvice">-</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-6 mb-8">
+            
+            <div class="border border-slate-200 rounded-lg p-5">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 border-b pb-2">
+                    <%= user.role === 'anggota' ? '📊 Performance Gap Analysis' : '📉 Retention Impact' %>
+                </h3>
+
+                <% if(user.role === 'anggota') { %>
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-blue-600"><%= stats.selfScore %></div>
+                            <div class="text-[10px] uppercase font-bold text-slate-400">Self Score</div>
+                        </div>
+                        <div class="text-slate-300 font-bold text-xl">VS</div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-slate-700"><%= stats.avgPeerScore %></div>
+                            <div class="text-[10px] uppercase font-bold text-slate-400">Peer Score</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-slate-50 p-3 rounded text-center border border-slate-100">
+                        <div class="text-xs text-slate-500 mb-1">Status Kesadaran Diri:</div>
+                        <div class="font-bold text-sm <%= stats.gap >= 2.5 ? 'text-red-500' : (stats.gap <= -2.5 ? 'text-yellow-600' : 'text-green-600') %>">
+                            <%= stats.gapLabel %> (Gap: <%= stats.gap %>)
+                        </div>
+                    </div>
+
+                <% } else { %>
+                    <% 
+                        const totalComfort = stats.comfort.ya + stats.comfort.biasa + stats.comfort.tidak; 
+                        const retentionRate = totalComfort > 0 ? Math.round(((stats.comfort.ya + stats.comfort.biasa)/totalComfort)*100) : 0;
+                    %>
+                    <div class="flex items-center justify-center mb-4">
+                        <div class="relative w-24 h-24 rounded-full border-8 <%= retentionRate < 70 ? 'border-red-200' : 'border-green-200' %> flex items-center justify-center">
+                            <span class="text-2xl font-bold <%= retentionRate < 70 ? 'text-red-600' : 'text-green-600' %>"><%= retentionRate %>%</span>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-xs font-bold text-slate-500 uppercase">Retention Rate</p>
+                        <p class="text-xs mt-1">
+                            <span class="text-green-600 font-bold"><%= stats.comfort.ya %> Betah</span> • 
+                            <span class="text-red-600 font-bold"><%= stats.comfort.tidak %> Ingin Keluar</span>
+                        </p>
+                    </div>
+                <% } %>
+            </div>
+
+            <div class="border border-slate-200 rounded-lg p-5">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 border-b pb-2">
+                    <%= user.role === 'anggota' ? '💼 Work Style' : '🗣️ Communication Style' %>
+                </h3>
+
+                <% if(user.role === 'anggota') { %>
+                    <div class="space-y-3">
+                        <div class="flex justify-between text-xs font-bold">
+                            <span>🔵 Aktif Tinggi</span>
+                            <span><%= stats.aktif_tinggi %> Vote</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-2 rounded-full"><div class="bg-blue-600 h-2 rounded-full" style="width: <%= (stats.aktif_tinggi/stats.totalVoters)*100 %>%"></div></div>
+
+                        <div class="flex justify-between text-xs font-bold">
+                            <span>🟢 Cukup Aktif</span>
+                            <span><%= stats.cukup_aktif %> Vote</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-2 rounded-full"><div class="bg-green-500 h-2 rounded-full" style="width: <%= (stats.cukup_aktif/stats.totalVoters)*100 %>%"></div></div>
+
+                        <div class="flex justify-between text-xs font-bold text-red-600">
+                            <span>🔴 Pasif / Ghost</span>
+                            <span><%= stats.pasif %> Vote</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-2 rounded-full"><div class="bg-red-500 h-2 rounded-full" style="width: <%= (stats.pasif/stats.totalVoters)*100 %>%"></div></div>
+                    </div>
+                <% } else { %>
+                    <% 
+                       let topComm = 'Jernih';
+                       let maxVal = stats.comm.jernih;
+                       let colorComm = 'text-blue-600';
+                       
+                       if(stats.comm.inkonsisten > maxVal) { topComm = 'Inkonsisten'; maxVal = stats.comm.inkonsisten; colorComm = 'text-gray-500'; }
+                       if(stats.comm.slow > maxVal) { topComm = 'Slow Respon'; maxVal = stats.comm.slow; colorComm = 'text-orange-500'; }
+                       if(stats.comm.otoriter > maxVal) { topComm = 'Otoriter'; maxVal = stats.comm.otoriter; colorComm = 'text-red-600'; }
+                    %>
+                    <div class="text-center py-2">
+                        <div class="text-xs text-slate-400 uppercase mb-1">Dominant Style</div>
+                        <div class="text-2xl font-bold <%= colorComm %> uppercase"><%= topComm %></div>
+                        <div class="text-[10px] text-slate-400 mt-1"><%= maxVal %> dari <%= stats.totalVoters %> orang memilih ini</div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-slate-100">
+                        <div class="text-center">
+                            <div class="text-lg font-bold text-yellow-500">⭐ <%= stats.avgClarity %></div>
+                            <div class="text-[10px] uppercase text-slate-400">Instruksi</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-lg font-bold text-purple-500">❤️ <%= stats.avgSupport %></div>
+                            <div class="text-[10px] uppercase text-slate-400">Support</div>
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+
+        <div class="mb-8 border-l-4 border-blue-500 pl-4 bg-slate-50 py-2">
+            <h3 class="text-xs font-bold text-blue-600 uppercase mb-1">🪞 Refleksi Diri (Pernyataan User)</h3>
+            <% if(reflection) { %>
+                <p class="text-sm text-slate-700 italic">"<%= reflection.self_growth || '-' %>"</p>
+                <p class="text-xs text-slate-500 mt-1"><span class="font-bold text-red-500">Hambatan:</span> <%= reflection.obstacle || '-' %></p>
+            <% } else { %>
+                <p class="text-sm text-slate-400 italic">User belum mengisi form refleksi.</p>
+            <% } %>
+        </div>
+
+        <div>
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 border-b pb-2 flex justify-between">
+                <span>💬 Evidence & Feedback</span>
+                <span>Anonymous Records</span>
+            </h3>
+            
+            <% 
+                let combinedNotes = [];
+                // Prioritaskan Evidence/Masukan
+                if(stats.evidence_list) combinedNotes = combinedNotes.concat(stats.evidence_list);
+                if(stats.feedback_list) combinedNotes = combinedNotes.concat(stats.feedback_list);
+                // 3 Kata ditaruh di bawah atau dipisah
+                let words = stats.words_list ? stats.words_list.join(", ") : "-";
+            %>
+
+            <% if(user.role === 'anggota' && words.length > 3) { %>
+                <div class="mb-4 text-xs text-slate-600 border border-dashed border-slate-300 p-2 rounded">
+                    <span class="font-bold">Kesan Rekan Kerja (3 Kata):</span> <%= words %>
+                </div>
+            <% } %>
+
+            <% if(combinedNotes.length === 0) { %>
+                <div class="text-center py-6 text-xs text-slate-400 italic border border-slate-100 rounded">
+                    Tidak ada catatan tertulis dari responden.
+                </div>
+            <% } else { %>
+                <div class="columns-1 md:columns-2 gap-4 space-y-4">
+                    <% combinedNotes.forEach(note => { %>
+                        <div class="bg-white p-3 rounded border border-slate-200 shadow-sm text-xs text-slate-700 leading-relaxed break-inside-avoid">
+                            "<%= note %>"
+                        </div>
+                    <% }) %>
+                </div>
+            <% } %>
+        </div>
+
+    </div>
+
+    <script>
+        async function runAiHrd(nim) {
+            const btn = document.getElementById('btnAiHrd');
+            const resultArea = document.getElementById('aiResultArea');
+            const realContent = document.getElementById('aiRealContent');
+            
+            btn.innerHTML = '⏳ Loading...';
+            btn.disabled = true;
+            resultArea.classList.remove('hidden');
+
+            try {
+                const response = await fetch('/api/analyze-person', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ targetNim: nim })
+                });
+
+                const json = await response.json();
+
+                if (json.success) {
+                    const data = json.data;
+                    document.getElementById('aiSentiment').innerText = data.sentiment;
+                    
+                    const list = document.getElementById('aiComplaints');
+                    list.innerHTML = '';
+                    data.top_complaints.forEach(c => { list.innerHTML += `<li>${c}</li>`; });
+
+                    document.getElementById('aiAdvice').innerHTML = `"${data.advice}"`;
+
+                    resultArea.classList.add('hidden');
+                    realContent.classList.remove('hidden');
+                    btn.classList.add('hidden'); 
+                } else {
+                    alert(json.message);
+                    resultArea.classList.add('hidden');
+                    btn.innerHTML = '✨ Retry';
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Gagal koneksi AI.');
+                btn.innerHTML = '✨ Retry';
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

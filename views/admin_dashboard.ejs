@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Executive Cockpit - BEM 360</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #F3F4F6; }
+        
+        /* Table Sticky Header */
+        .table-container { overflow-x: auto; max-height: 70vh; }
+        .table-container thead th { position: sticky; top: 0; z-index: 10; background-color: #F9FAFB; }
+
+        /* AI Gradient Animation */
+        .ai-gradient {
+            background: linear-gradient(270deg, #4f46e5, #9333ea, #2563eb);
+            background-size: 600% 600%;
+            animation: gradientMove 10s ease infinite;
+        }
+        @keyframes gradientMove { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+
+        /* Print Style */
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; -webkit-print-color-adjust: exact; }
+            .card { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; }
+            .table-container { max-height: none; overflow: visible; }
+        }
+    </style>
+</head>
+<body class="p-6 md:p-8">
+    
+    <div class="flex justify-between items-center mb-6 no-print">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Executive Dashboard 🚀</h1>
+            <p class="text-gray-500 text-sm">Overview Kinerja Kabinet Gema Revolusi</p>
+        </div>
+        <a href="/logout" class="bg-white border border-gray-200 text-red-500 font-bold px-4 py-2 rounded-xl hover:bg-red-50 transition text-sm">
+            Logout
+        </a>
+    </div>
+
+    <div class="w-full mb-10 no-print">
+        <div class="bg-slate-900 rounded-2xl shadow-2xl border border-slate-800 overflow-hidden">
+            
+            <div class="px-8 py-5 border-b border-slate-800 flex justify-between items-center bg-gray-700 backdrop-blur-md">
+                <div class="flex items-center gap-4">
+                    <div class="relative flex items-center justify-center">
+                        <div class="w-3 h-3 bg-blue-500 rounded-full animate-ping absolute"></div>
+                        <div class="w-3 h-3 bg-blue-600 rounded-full relative border border-blue-400"></div>
+                    </div>
+                    <div>
+                        <h2 class="text-white font-black tracking-tight text-xl uppercase italic">Analysis Center</h2>
+                        <p class="text-blue-400 text-[10px] font-mono uppercase tracking-[0.2em]" id="aiStatus">Sistem Siap Menganalisis</p>
+                    </div>
+                </div>
+                
+                <button onclick="generateAI()" class="group relative px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-black uppercase tracking-widest rounded-lg transition-all duration-300 shadow-lg shadow-blue-900/50 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    Jalankan Analisis
+                </button>
+            </div>
+    
+            <div class="p-8 bg-slate-900/40 relative">
+                <div id="aiLoading" class="hidden absolute inset-0 bg-slate-950/95 z-50 flex flex-col items-center justify-center backdrop-blur-md">
+                    <div class="w-12 h-12 border-4 border-slate-800 border-t-blue-500 rounded-full animate-spin"></div>
+                    <p class="text-blue-400 text-[10px] font-mono mt-4 tracking-[0.3em] uppercase animate-pulse">Memproses Data Organisasi...</p>
+                </div>
+    
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8" id="aiContentArea">
+                    
+                    <div class="relative p-6 rounded-xl bg-slate-950/60 border border-slate-800 group hover:border-blue-500/50 transition-all duration-500">
+                        <div class="absolute -top-3 left-4 px-3 py-1 bg-blue-600 text-white text-[9px] font-black uppercase tracking-tighter rounded shadow-lg">
+                            Ringkasan Organisasi
+                        </div>
+                        <div class="mt-2 text-slate-100 text-sm leading-relaxed font-normal" id="bemText">
+                            Menunggu perintah analisis untuk memetakan kondisi kabinet...
+                        </div>
+                    </div>
+    
+                    <div class="relative p-6 rounded-xl bg-slate-950/60 border border-slate-800 group hover:border-red-500/50 transition-all duration-500">
+                        <div class="absolute -top-3 left-4 px-3 py-1 bg-red-600 text-white text-[9px] font-black uppercase tracking-tighter rounded shadow-lg">
+                            Titik Kritis Dept
+                        </div>
+                        <div class="mt-2 text-slate-100 text-sm leading-relaxed font-normal" id="deptText">
+                            -
+                        </div>
+                    </div>
+    
+                    <div class="relative p-6 rounded-xl bg-slate-950/60 border border-slate-800 group hover:border-indigo-500/50 transition-all duration-500">
+                        <div class="absolute -top-3 left-4 px-3 py-1 bg-indigo-600 text-white text-[9px] font-black uppercase tracking-tighter rounded shadow-lg">
+                            Pantauan SDM
+                        </div>
+                        <div class="mt-2 text-slate-100 text-sm leading-relaxed font-normal" id="indivText">
+                            -
+                        </div>
+                    </div>
+    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 no-print">
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+            <p class="text-gray-400 text-xs font-bold uppercase tracking-wide">Partisipasi Refleksi</p>
+            <% const percent = globalStats.totalUsers > 0 ? Math.round((globalStats.sudahRefleksi / globalStats.totalUsers) * 100) : 0; %>
+            <div class="flex justify-between items-end mt-2">
+                <h3 class="text-2xl font-bold text-gray-800"><%= percent %>%</h3>
+                <span class="text-xs text-gray-500"><%= globalStats.sudahRefleksi %>/<%= globalStats.totalUsers %> User</span>
+            </div>
+            <div class="w-full bg-gray-100 h-2 rounded-full mt-3 overflow-hidden">
+                <div class="bg-blue-500 h-2 rounded-full" style="width: <%= percent %>%"></div>
+            </div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+            <p class="text-gray-400 text-xs font-bold uppercase tracking-wide">Top MVP 👑</p>
+            <div class="mt-2">
+                <h3 class="text-xl font-bold text-gray-800 truncate"><%= globalStats.mvpUser.name %></h3>
+                <p class="text-xs text-green-600 font-bold mt-1"><%= globalStats.mvpUser.count %> vote 'Driver'</p>
+            </div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+            <p class="text-gray-400 text-xs font-bold uppercase tracking-wide">Top Ghost 👻</p>
+            <div class="mt-2">
+                <h3 class="text-xl font-bold text-gray-800 truncate"><%= globalStats.ghostUser.name %></h3>
+                <p class="text-xs text-red-500 font-bold mt-1"><%= globalStats.ghostUser.count %> vote 'Ghost'</p>
+            </div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+            <p class="text-gray-400 text-xs font-bold uppercase tracking-wide">Reshuffle Alert 🚨</p>
+            <div class="mt-2">
+                <h3 class="text-xl font-bold text-red-600 truncate"><%= globalStats.crisisDept.name %></h3>
+                <p class="text-xs text-gray-500 mt-1">Risk Score: <%= globalStats.crisisDept.riskScore.toFixed(0) %></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4 no-print">
+        <div class="flex gap-3 w-full md:w-auto">
+            <div class="relative w-full md:w-64">
+                <input type="text" id="searchInput" placeholder="Cari Nama, Status, Tag..." 
+                    class="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm transition shadow-sm">
+                <span class="absolute left-3 top-2.5 text-gray-400">🔍</span>
+            </div>
+            
+            <select id="deptFilter" class="px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 outline-none text-sm bg-white cursor-pointer hover:bg-gray-50 shadow-sm">
+                <option value="all">Semua Kementerian</option>
+                <option value="inti">Pengurus Inti</option>
+                <option value="admin">Admin</option>
+                <option value="ppm">PPM</option>
+                <option value="penkeu">Penkeu</option>
+                <option value="inkeu">Inkeu</option>
+                <option value="dikrir">Dikrir</option>
+                <option value="kpsdm">KPSDM</option>
+                <option value="pemora">Pemora</option>
+                <option value="adkesma">Adkesma</option>
+                <option value="pengbas">Pengbas</option>
+                <option value="hubeks">Hubeks</option>
+                <option value="harkam">Harkam</option>
+                <option value="dkv">DKV</option>
+            </select>
+        </div>
+
+        <div class="flex gap-2">
+            <button onclick="window.print()" class="bg-gray-800 text-white font-bold px-4 py-2 rounded-xl text-sm flex items-center gap-2 hover:bg-black transition shadow-sm">
+                🖨️ PDF Laporan
+            </button>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 table-container">
+        <table class="w-full text-left border-collapse" id="dataTable">
+            <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider font-bold border-b border-gray-200">
+                <tr>
+                    <th class="p-5 min-w-[250px]">Nama & Jabatan</th>
+                    <th class="p-5 text-center min-w-[150px]">Partisipasi</th>
+                    <th class="p-5 text-center">Skor Diri</th>
+                    <th class="p-5 text-center min-w-[150px]">Vote Teman</th>
+                    <th class="p-5 min-w-[200px]">Status / Vonis</th>
+                </tr>
+            </thead>
+            <tbody class="text-sm divide-y divide-gray-100" id="tableBody">
+                <% report.forEach(row => { %>
+                <tr class="hover:bg-blue-50/50 transition group data-row cursor-pointer" 
+                    data-dept="<%= row.dept %>"
+                    onclick="window.location.href='/admin/report/<%= row.nim %>'">
+                    
+                    <td class="p-5">
+                        <div class="font-bold text-gray-800"><%= row.name %></div>
+                        <div class="text-xs text-gray-400 font-medium uppercase mt-0.5">
+                            <%= row.role %> - <%= row.dept %>
+                        </div>
+                    </td>
+
+                    <td class="p-5 text-center">
+                        <div class="flex flex-col items-center gap-1">
+                            <% if(row.has_reflection) { %>
+                                <span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-green-200">Refleksi ✅</span>
+                            <% } else { %>
+                                <span class="bg-red-100 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-red-200">Belum Refleksi ❌</span>
+                            <% } %>
+                            <span class="text-[10px] text-gray-400">Menilai: <b><%= row.votes_given %></b> Orang</span>
+                        </div>
+                    </td>
+
+                    <td class="p-5 text-center">
+                        <% if(row.self_score > 0) { %>
+                            <span class="font-bold text-base <%= row.self_score >= 8 ? 'text-blue-600' : 'text-gray-600' %>"><%= row.self_score %></span>
+                        <% } else { %>
+                            <span class="text-gray-300">-</span>
+                        <% } %>
+                    </td>
+
+                    <td class="p-5 text-center">
+                        <% if(row.total_voters === 0) { %>
+                            <span class="text-gray-300 italic text-xs">Belum ada data</span>
+                        <% } else { %>
+                            <% if(row.role === 'anggota') { %>
+                                <div class="flex justify-center gap-2">
+                                    <span class="text-green-600 font-bold bg-green-50 px-1.5 py-0.5 rounded text-xs border border-green-100">🏎️ <%= row.driver_count %></span>
+                                    <span class="text-gray-500 font-bold bg-gray-100 px-1.5 py-0.5 rounded text-xs border border-gray-200">👻 <%= row.ghost_count %></span>
+                                </div>
+                                <div class="text-[10px] text-gray-400 mt-1">Avg: <%= row.avg_peer_score %></div>
+                            <% } else { %>
+                                <% if(row.tags.includes('HIGH TURNOVER 🚨')) { %>
+                                    <span class="text-red-600 font-bold bg-red-50 px-2 py-1 rounded text-xs border border-red-100">🚨 BAHAYA</span>
+                                <% } else { %>
+                                    <span class="text-gray-500 text-xs">Standar</span>
+                                <% } %>
+                            <% } %>
+                        <% } %>
+                    </td>
+
+                    <td class="p-5">
+                        <div class="flex flex-wrap gap-1">
+                            <% if(row.tags.length === 0 || (row.tags.length === 1 && row.tags[0] === 'NO DATA 💤')) { %>
+                                <span class="bg-gray-50 text-gray-400 text-[10px] px-2 py-1 rounded border border-gray-100">Menunggu Data</span>
+                            <% } else { %>
+                                <% row.tags.forEach(tag => { 
+                                    let colorClass = 'bg-gray-100 text-gray-600 border-gray-200';
+                                    if(tag.includes('MVP') || tag.includes('GOOD')) colorClass = 'bg-green-100 text-green-700 border-green-200';
+                                    if(tag.includes('DELUSIONAL') || tag.includes('TURNOVER') || tag.includes('GHOST') || tag.includes('ISSUE')) colorClass = 'bg-red-100 text-red-700 border-red-200';
+                                    if(tag.includes('IMPOSTER')) colorClass = 'bg-yellow-100 text-yellow-700 border-yellow-200';
+                                %>
+                                    <span class="<%= colorClass %> text-[10px] font-bold px-2 py-0.5 rounded border shadow-sm"><%= tag %></span>
+                                <% }) %>
+                            <% } %>
+                        </div>
+                    </td>
+                </tr>
+                <% }) %>
+            </tbody>
+        </table>
+        
+        <div id="noResult" class="hidden p-8 text-center text-gray-400 text-sm">
+            Tidak ditemukan data yang cocok 🧐
+        </div>
+    </div>
+
+    <script>
+        console.log("🚀 System Dashboard Loading...");
+
+        // === A. LOGIC CLICK ROW (BIAR BISA DIKLIK) ===
+        // Kita pasang event listener manual biar lebih paten daripada onclick=""
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                const rows = document.querySelectorAll('.data-row');
+                console.log(`Menemukan ${rows.length} baris data.`);
+
+                rows.forEach(row => {
+                    row.addEventListener('click', function() {
+                        // Ambil NIM dari attribute onclick yang lama (kita ambil URL-nya aja)
+                        // Atau kita construct manual biar aman
+                        const rawOnclick = this.getAttribute('onclick'); 
+                        if(rawOnclick) {
+                            // Jalankan perintah pindah halaman
+                            window.location.href = rawOnclick.replace("window.location.href='", "").replace("'", "");
+                        }
+                    });
+                });
+            } catch (error) {
+                console.error("❌ Error Row Click:", error);
+            }
+        });
+
+        // === B. LOGIC SEARCH & FILTER ===
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                const searchInput = document.getElementById('searchInput');
+                const deptFilter = document.getElementById('deptFilter');
+                const rows = document.querySelectorAll('.data-row');
+                const noResult = document.getElementById('noResult');
+
+                if (!searchInput || !deptFilter) {
+                    console.error("❌ Komponen Search/Filter gak ketemu ID-nya!");
+                    return;
+                }
+
+                function filterTable() {
+                    const query = searchInput.value.toLowerCase();
+                    const dept = deptFilter.value;
+                    let visibleCount = 0;
+
+                    rows.forEach(row => {
+                        // Ambil text content biar aman
+                        const rowText = row.innerText.toLowerCase();
+                        const rowDept = row.getAttribute('data-dept');
+
+                        const matchText = rowText.includes(query);
+                        const matchDept = (dept === 'all') || (rowDept === dept);
+
+                        if (matchText && matchDept) {
+                            row.style.display = ''; // Munculin
+                            visibleCount++;
+                        } else {
+                            row.style.display = 'none'; // Umpetin
+                        }
+                    });
+
+                    // Toggle No Result Message
+                    if (visibleCount === 0) noResult.classList.remove('hidden');
+                    else noResult.classList.add('hidden');
+                }
+
+                searchInput.addEventListener('input', filterTable);
+                deptFilter.addEventListener('change', filterTable);
+                
+                console.log("✅ Fitur Search Siap!");
+
+            } catch (error) {
+                console.error("❌ Error Search:", error);
+            }
+        });
+
+        // === C. LOGIC AI GENERATOR ===
+        // Kita bikin global function biar bisa dipanggil dari onclick
+        window.generateAI = async function() {
+            console.log("✨ Tombol AI Dipencet!");
+            
+            const loading = document.getElementById('aiLoading');
+            const contentArea = document.getElementById('aiContentArea');
+            const statusText = document.getElementById('aiStatus');
+
+            if (!loading) {
+                alert("Error: Elemen Loading gak ketemu. Coba refresh.");
+                return;
+            }
+
+            // 1. Tampilan Loading
+            loading.classList.remove('hidden');
+            contentArea.classList.add('opacity-50');
+
+            try {
+                // 2. Tembak API
+                console.log("Mengirim request ke AI...");
+                const response = await fetch('/api/generate-ai', { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const result = await response.json();
+                console.log("Respon AI:", result);
+
+                if (result.success) {
+                    // 3. Update UI
+                    document.getElementById('bemText').innerHTML = result.data.bem_insight || "Tidak ada data.";
+                    document.getElementById('deptText').innerHTML = result.data.dept_insight || "Tidak ada data.";
+                    document.getElementById('indivText').innerHTML = result.data.individual_insight || "Tidak ada data.";
+
+                    statusText.innerText = result.isCached ? "Status: Loaded from Cache (Hemat Token)" : "Status: Insight Generated ✨";
+                } else {
+                    alert('Gagal: ' + result.message);
+                }
+            } catch (error) {
+                console.error("AI Error:", error);
+                alert('Error koneksi ke server AI. Cek console browser.');
+            } finally {
+                loading.classList.add('hidden');
+                contentArea.classList.remove('opacity-50');
+            }
+        }
+    </script>
+</body>
+</html>
