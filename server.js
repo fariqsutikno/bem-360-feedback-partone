@@ -1,7 +1,7 @@
 require('dotenv').config(); // Muat environment variables
 const express = require('express');
 // 👇 PENTING: Cukup panggil db aja, inisialisasi biarin diurus file config
-const { db } = require('./config/firebase'); 
+const { db, Firestore } = require('./config/firebase'); 
 const session = require('express-session');
 const FirestoreStore = require('connect-session-firestore')(session);
 const helmet = require('helmet');
@@ -46,19 +46,15 @@ const sessionSecret = process.env.SESSION_SECRET || 'rahasia_negara_bem_fallback
 
 app.use(session({
   store: new FirestoreStore({
-    db: db, // Pake variabel 'db' yang diimport dari config/firebase
-    kind: 'sessions', // Nanti muncul collection 'sessions' di Firestore
+    database: Firestore, // 🔥 Ubah dari 'db' jadi 'database: Firestore'
   }),
   secret: sessionSecret,
   resave: false,
-  saveUninitialized: false, // Hemat storage, cuma simpen kalau user login
+  saveUninitialized: false,
   cookie: { 
-    // Secure: true kalau di Production (HTTPS), false kalau di Local
-    // Karena lo pake Nginx HTTPS, idealnya ini true. 
-    // Tapi kalau masih error login, ubah sementara jadi false.
     secure: process.env.NODE_ENV === 'production' ? true : false, 
-    httpOnly: true, // Anti XSS
-    maxAge: 24 * 60 * 60 * 1000, // 1 Hari
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000,
     sameSite: 'lax'
   }
 }));
