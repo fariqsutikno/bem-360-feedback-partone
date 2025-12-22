@@ -1,10 +1,10 @@
 require('dotenv').config();
 const express = require('express');
 const { db } = require('./config/firebase'); 
-const session = require('express-session');
-const FirestoreStore = require('firestore-store')(session); // 🔥 Cara import berbeda
+const session = require('express-session'); // 🔥 Session harus di-require DULU
 const helmet = require('helmet');
 const flash = require('connect-flash');
+const FirestoreStore = require('firestore-store')(session); // 🔥 Baru panggil FirestoreStore SETELAH session
 
 const app = express();
 const port = process.env.PORT || 3000;
