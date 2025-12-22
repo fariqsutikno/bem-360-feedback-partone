@@ -23,10 +23,4 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 
-// 🔥 PENTING: Export juga admin.firestore (bukan instance db-nya)
-// Karena connect-session-firestore butuh constructor, bukan instance
-module.exports = { 
-  admin, 
-  db,
-  Firestore: admin.firestore // Ini yang diperlukan connect-session-firestore
-};
+module.exports = { admin, db };
