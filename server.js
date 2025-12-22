@@ -21,7 +21,7 @@ admin.initializeApp({
 });
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 // === MIDDLEWARE WAJIB ===
 // 1. Biar bisa baca data dari FORM HTML (POST biasa)
