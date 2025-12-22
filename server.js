@@ -1,6 +1,7 @@
 require('dotenv').config(); // Muat environment variables
 const express = require('express');
 const session = require('express-session');
+const FirestoreStore = require('connect-session-firestore')(session);
 const helmet = require('helmet');
 const flash = require('connect-flash');
 const admin = require('firebase-admin');
@@ -80,6 +81,19 @@ app.use(session({
         httpOnly: true, // Mencegah akses cookie dari JavaScript sisi klien
         secure: false,
     } 
+}));
+app.use(session({
+  store: new FirestoreStore({
+    dataset: db, // Pastiin variabel 'db' firestore lo kebaca di sini
+    kind: 'sessions', // Nanti muncul collection baru 'sessions' di Firestore
+  }),
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: { 
+    secure: process.env.NODE_ENV == 'production' ? true : false, // Ubah jadi true kalau udah full HTTPS + Domain
+    maxAge: 24 * 60 * 60 * 1000 // Session valid 1 hari (24 jam)
+  }
 }));
 
 // Panggil Routes yang udah dipisah
